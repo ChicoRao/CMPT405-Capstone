@@ -37,3 +37,12 @@
     top: 50%;
     left: 50%;
 }
+
+.GestureQRSwitch {
+    white-space: nowrap;
+    display: inline-block;
+    text-align: center;
+    position: fixed;
+    top: 65%;
+    left: 59%;
+}

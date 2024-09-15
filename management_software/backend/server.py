@@ -29,9 +29,7 @@ from motion_detection import motion_detector
 lock = threading.Lock()
 urlList = ipSearch()
 SavedLayout = []
-# frame_count = 0
-
-
+isUsingQR = False
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -69,11 +67,15 @@ def capture_selected_table_photo():
 
 def Gestures(frame, tableNumber):
     sendingAction = dict()
-    gesture = fourImages(frame)
-    result = return_QR_Result(frame)
-    print(result)
+    gesture = None
+    result = None
+
+    if isUsingQR:
+        result = return_QR_Result(frame)
+    else:
+        gesture = fourImages(frame)
+
     if result:
-        
         if 'Water' in result:
             print ('QR is Water')
             sendingAction[tableNumber] = 'requests for Water (QR)'
@@ -88,22 +90,15 @@ def Gestures(frame, tableNumber):
             return sendingAction
  
     if gesture:
-        # print("GESTURE", gesture)
         if 'OK' in gesture :
-            # sendingAction.append(tableNumber)
-            # sendingAction.append('Bill')
             sendingAction[tableNumber] = 'requests for bill'
             return sendingAction
 
         elif 'Call' in gesture:
-            # sendingAction.append(tableNumber)
-            # sendingAction.append('Order')
             sendingAction[tableNumber] = 'requests to order'
             return sendingAction
 
         elif 'Peace' in gesture:
-            # sendingAction.append(tableNumber)
-            # sendingAction.append('Order')
             sendingAction[tableNumber] = 'requests for water refill'
             return sendingAction
         else:
@@ -333,6 +328,15 @@ def GetLayout():
         return SavedLayout
     return {}
 
+@app.route("/GestureQRSwitch", methods = ['PUT'])
+def GestureQRSwitch():
+    isUsingQR = request.json['isUsingQR']
+    if isUsingQR:
+        message = "QR code"
+    else:
+        message = "Hand Gestures"
+    print("Switched to " + message)
+    return{"message": "Switched to " + message}
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
